@@ -1,0 +1,6 @@
+sourceBasePath:
+commands:
+  gcloudbill:
+    sourcePath: /gcloudbill.js
+    description: Shows your Google Cloud bill
+    parameters:
