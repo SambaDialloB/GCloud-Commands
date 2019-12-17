@@ -4,3 +4,5 @@ commands:
     sourcePath: /gcloudbill.js
     description: Shows your Google Cloud bill
     parameters:
+    - name: month_year
+      optional: true
