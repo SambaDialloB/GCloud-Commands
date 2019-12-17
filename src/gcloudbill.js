@@ -28,19 +28,23 @@ async function _command(params, commandText, secrets = {}) {
     let totalCost = 0;
     let rows = await query(google_app_cred.project_id, secrets.billing_table_name);
 
-    let tableArray = [
-        {
-            "type": "mrkdwn",
-            "text": "*Service*"
-        },
-        {
-            "type": "mrkdwn",
-            "text": "*Cost*"
-        },
-    ];
+    let tableBlocks = [];
+    let tempBlock = {
+        "type": "section",
+        "fields": []
+    };
+    let fieldsArr = [];
     rows.forEach(row => {
         totalCost += row.cost;
-        tableArray.push({
+        if (fieldsArr.length >= 10) {
+            tempBlock.fields = fieldsArr.splice(0, 10);
+            tableBlocks.push(tempBlock);
+            tempBlock = {
+                "type": "section",
+                "fields": []
+            };
+        }
+        fieldsArr.push({
             "type": "plain_text",
             "text": row.service
         }, {
@@ -48,10 +52,12 @@ async function _command(params, commandText, secrets = {}) {
             "text": "$" + row.cost.toFixed(2)
         });
     });
+    if (fieldsArr.length > 0) {
+        tempBlock.fields = fieldsArr.splice(0, 10);
+        tableBlocks.push(tempBlock);
+    }
     let date = getDate();
-    console.log(date);
     let costStr = "Google Cloud charges from " + date.month + ", " + date.year + ": $" + totalCost.toFixed(2);
-
     let blocks = [
         {
             "type": "section",
@@ -59,9 +65,21 @@ async function _command(params, commandText, secrets = {}) {
                 "text": costStr,
                 "type": "mrkdwn"
             },
-            "fields": tableArray
-        }
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*Service*"
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": "*Costs*"
+                },
+            ]
+        },
     ];
+    tableBlocks.forEach(block => {
+        blocks.push(block);
+    });
     return { response_type: 'in_channel', blocks };
 }
 function getDate() {
@@ -102,7 +120,6 @@ async function query(projectId, tableName) {
 
     //adds up all from the cost column of this test dataset 
     const sqlQuery = 'select service.description as service,  SUM(cost) as cost  from  ' + tableName + ' where EXTRACT(YEAR from usage_start_time) = EXTRACT(YEAR from CURRENT_DATE()) AND EXTRACT(MONTH from usage_start_time) = EXTRACT(MONTH from CURRENT_DATE()) group by service;';
-
     // For all options, see https://cloud.google.com/bigquery/docs/reference/rest/v2/jobs/query
     const options = {
         query: sqlQuery,
