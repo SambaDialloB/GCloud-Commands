@@ -12,18 +12,18 @@ const path = "./gcloud_cred.json";
  */
 async function _command(params, commandText, secrets = {}) {
     if (!secrets || !secrets.gcloud_cred_json || !secrets.gcloud_cred_key || !secrets.billing_table_name) {
-        return { body: { text: "You must create secrets for GCloud Billing service to use this command.\nSecrets required to run this command are: \ngcloud_cred_json \ngcloud_cred_key \nbilling_table_name" } };
+        return { response_type: 'ephemeral', text: "You must create secrets for gcloud_cred_json, gcloud_cred_key and billing_table_name to use this command " };
     }
     let month;
     let year;
     if (params.month_year) {
         let dateArr = params.month_year.split("/");
         console.log(dateArr)
-        if(dateArr[0].length == 1){
+        if (dateArr[0].length == 1) {
             month = '0' + dateArr[0]
-        }else if(dateArr[0].length == 2 && (dateArr[0].charAt(0) == '0' || dateArr[0] == "11" || dateArr[0] == "12")){
+        } else if (dateArr[0].length == 2 && (dateArr[0].charAt(0) == '0' || dateArr[0] == "11" || dateArr[0] == "12")) {
             month = dateArr[0];
-        }else{
+        } else {
             return { response_type: 'ephemeral', text: 'Invalid month/year. Example: 11/2019 for November 2019' };
         }
         year = dateArr[1];
